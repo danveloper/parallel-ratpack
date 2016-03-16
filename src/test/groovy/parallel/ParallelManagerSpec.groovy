@@ -38,6 +38,7 @@ class ParallelManagerSpec extends Specification {
   }
 
   def 'fetches item'() {
+    //You may have to run this over and over again to get it to fail - it's a close race!
     when:
     List result = sync(RxRatpack.promiseSingle(manager.fetchValue()))
 
