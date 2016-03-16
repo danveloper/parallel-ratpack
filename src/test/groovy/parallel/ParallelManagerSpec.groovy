@@ -1,7 +1,5 @@
 package parallel
 
-import ratpack.exec.Promise
-import ratpack.func.Function
 import ratpack.rx.RxRatpack
 import ratpack.test.exec.ExecHarness
 import rx.Observable
@@ -40,7 +38,7 @@ class ParallelManagerSpec extends Specification {
   def 'fetches item'() {
     //You may have to run this over and over again to get it to fail - it's a close race!
     when:
-    List result = sync(RxRatpack.promiseSingle(manager.fetchValue()))
+    List<String> result = harness.yield { manager.fetchValue().promiseSingle() }.valueOrThrow
 
     then:
     1 * parallelThingUno.fetchValue() >> Observable.just("mocked uno")
@@ -54,15 +52,6 @@ class ParallelManagerSpec extends Specification {
     }
     result.size() == 5
 
-  }
-
-
-  public <T> T sync(Promise<T> promise) {
-    harness.yield(Function.constant(promise)).valueOrThrow
-  }
-
-  public <T> T sync(Observable<T> observable) {
-    harness.yield(Function.constant(RxRatpack.promiseSingle(observable))).valueOrThrow
   }
 
 }
