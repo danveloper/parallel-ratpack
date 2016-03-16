@@ -6,6 +6,7 @@ import rx.functions.Func1
 import rx.functions.Func2
 import toDoInParallel.ParallelThing
 
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CyclicBarrier
 
 class ParallelManager {
@@ -26,15 +27,15 @@ class ParallelManager {
     def thingDOb = thingD.fetchValue()
     def thingEOb = thingE.fetchValue()
     return forkAndFlatten([thingBOb, thingCOb, thingDOb, thingEOb])
-        .reduce([item], this.&aggregate as Func2)
+        .reduce(new CopyOnWriteArrayList(item), this.&aggregate as Func2)
   }
 
   Observable forkAndFlatten(List<Observable> observableList) {
     //CyclicBarrier barrier = new CyclicBarrier(observableList.size())
-    Observable.from(observableList).flatMap {
+    Observable.from(observableList)
+    .compose(RxRatpack.&forkEach).flatMap {
       it
     }
-    .compose(RxRatpack.&forkEach)
     //.doOnNext { value -> Exceptions.uncheck({}, { barrier.await() }) }
   }
 
